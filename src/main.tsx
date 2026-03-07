@@ -5,19 +5,28 @@ import { Login } from "@/pages/Login";
 import { Register } from "@/pages/Register";
 import { App } from "@/pages/App";
 import { api } from "@/api/client";
+import { connectSocket } from "@/api/socket";
 import { useStore } from "@/store";
+import type { User } from "@/api/client";
 
 function Root() {
   const { user, setUser } = useStore();
   const [page, setPage] = useState<"login" | "register">("login");
   const [loading, setLoading] = useState(true);
 
+  const boot = async (u: User) => {
+    setUser(u);
+    // Connect Phoenix socket with short-lived token
+    const { token } = await api.wsToken();
+    await connectSocket(token);
+  };
+
   useEffect(() => {
     api.me()
-      .then(setUser)
+      .then(boot)
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [setUser]);
+  }, []);
 
   if (loading) {
     return (
@@ -29,8 +38,8 @@ function Root() {
 
   if (!user) {
     return page === "login"
-      ? <Login onSwitch={() => setPage("register")} />
-      : <Register onSwitch={() => setPage("login")} />;
+      ? <Login onSwitch={() => setPage("register")} onLogin={boot} />
+      : <Register onSwitch={() => setPage("login")} onLogin={boot} />;
   }
 
   return <App />;

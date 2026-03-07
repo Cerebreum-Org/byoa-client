@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { api } from "@/api/client";
-import { useStore } from "@/store";
+import type { User } from "@/api/client";
 
 const s = (style: React.CSSProperties) => style;
 
@@ -11,8 +11,7 @@ const FIELDS = [
   { key: "password", label: "PASSWORD", type: "password", placeholder: "••••••••" },
 ] as const;
 
-export function Register({ onSwitch }: { onSwitch: () => void }) {
-  const setUser = useStore((s) => s.setUser);
+export function Register({ onSwitch, onLogin }: { onSwitch: () => void; onLogin: (u: User) => void }) {
   const [form, setForm] = useState({ email: "", username: "", displayName: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,7 +23,7 @@ export function Register({ onSwitch }: { onSwitch: () => void }) {
     setLoading(true); setError("");
     try {
       const { user } = await api.signup(form);
-      setUser(user);
+      onLogin(user);
     } catch (e) {
       setError((e as Error).message);
     }

@@ -1,20 +1,26 @@
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "@/store";
-import { socket } from "@/api/ws";
+import { joinRoom, sendMessage, onMessage } from "@/api/socket";
 import { formatDistanceToNow } from "date-fns";
+import type { Message } from "@/api/client";
 
 const s = (style: React.CSSProperties) => style;
 
 export function ChatArea() {
-  const { activeRoom, messages, appendMessage, user } = useStore();
+  const { activeRoom, messages, appendMessage, setMessages } = useStore();
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  // Join Phoenix Channel when room changes
   useEffect(() => {
-    const unsub = socket.subscribe((event) => {
-      if (event.type === "message") appendMessage(event.message);
-    });
-    return unsub;
+    if (!activeRoom) return;
+    const leave = joinRoom(activeRoom.id, (msgs: Message[]) => setMessages(msgs));
+    return () => { leave(); };
+  }, [activeRoom?.id, setMessages]);
+
+  // Listen for incoming messages
+  useEffect(() => {
+    return onMessage((msg) => appendMessage(msg));
   }, [appendMessage]);
 
   useEffect(() => {
@@ -22,8 +28,8 @@ export function ChatArea() {
   }, [messages]);
 
   const send = () => {
-    if (!input.trim() || !user || !socket.connected) return;
-    socket.send({ content: input.trim(), senderId: user.id, senderName: user.displayName });
+    if (!input.trim() || !activeRoom) return;
+    sendMessage(input.trim());
     setInput("");
   };
 

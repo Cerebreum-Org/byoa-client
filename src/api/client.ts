@@ -39,6 +39,9 @@ export const api = {
   // Messages
   getMessages: (roomId: string) => req<Message[]>("GET", `/rooms/${roomId}/messages`),
 
+  // WebSocket token
+  wsToken: () => req<{ token: string }>("GET", "/auth/ws-token"),
+
   // Agents
   getAgents: () => req<Agent[]>("GET", "/agents"),
   createAgent: (data: { name: string; webhookUrl: string; capabilities: string[] }) =>

@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { api } from "@/api/client";
-import { useStore } from "@/store";
+import type { User } from "@/api/client";
 
 const s = (style: React.CSSProperties) => style;
 
-export function Login({ onSwitch }: { onSwitch: () => void }) {
-  const setUser = useStore((s) => s.setUser);
+export function Login({ onSwitch, onLogin }: { onSwitch: () => void; onLogin: (u: User) => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -15,7 +14,7 @@ export function Login({ onSwitch }: { onSwitch: () => void }) {
     setLoading(true); setError("");
     try {
       const { user } = await api.login({ email, password });
-      setUser(user);
+      onLogin(user);
     } catch (e) {
       setError((e as Error).message);
     }
