@@ -23,7 +23,7 @@ export function ServerList() {
 
   return (
     <TooltipProvider delay={300}>
-      <nav className="electron-drag flex flex-col items-center bg-zinc-900 w-[72px] h-full overflow-y-auto overflow-x-hidden shrink-0">
+      <nav className="flex flex-col items-center bg-zinc-900 w-[72px] h-full overflow-y-auto overflow-x-hidden shrink-0">
         {/* macOS traffic light clearance — 52px covers buttons at y=14 */}
         <div className="h-[52px] w-full shrink-0" />
 
