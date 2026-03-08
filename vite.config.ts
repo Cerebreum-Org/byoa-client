@@ -6,5 +6,9 @@ import { resolve } from "path";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: { alias: { "@": resolve(__dirname, "src") } },
-  server: { proxy: { "/api": "http://localhost:3000", "/ws": { target: "ws://localhost:3000", ws: true } } },
+  server: {
+    proxy: {
+      "/api": { target: "http://localhost:3000", changeOrigin: true },
+    },
+  },
 });

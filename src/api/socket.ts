@@ -1,50 +1,61 @@
-import { Socket, Channel } from "phoenix";
 import type { Message } from "./client";
 
-let socket: Socket | null = null;
-let channel: Channel | null = null;
+let ws: WebSocket | null = null;
 let currentRoomId: string | null = null;
+let currentToken: string | null = null;
 type MessageListener = (msg: Message) => void;
 const listeners = new Set<MessageListener>();
+let joinCallbacks: ((msgs: Message[]) => void)[] = [];
 
 export async function connectSocket(token: string): Promise<void> {
-  if (socket) return;
-  socket = new Socket("/socket", { params: { token } });
-  socket.connect();
+  currentToken = token;
+  // Connection is established per-room via joinRoom
 }
 
 export function joinRoom(roomId: string, onMessages: (msgs: Message[]) => void): () => void {
-  if (!socket) throw new Error("Socket not connected");
-  if (currentRoomId === roomId && channel) return () => {};
+  // Close previous connection if switching rooms
+  if (currentRoomId !== roomId && ws) {
+    ws.close();
+    ws = null;
+  }
 
-  // Leave previous room
-  channel?.leave();
   currentRoomId = roomId;
+  joinCallbacks = [onMessages];
 
-  channel = socket.channel(`room:${roomId}`, {});
+  const url = `ws://localhost:3000/api/ws?roomId=${roomId}${currentToken ? `&token=${currentToken}` : ""}`;
+  ws = new WebSocket(url);
 
-  channel.join()
-    .receive("ok", (resp: { messages: Message[] }) => onMessages(resp.messages))
-    .receive("error", (e: unknown) => console.error("Join error", e));
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (data.type === "history") {
+        joinCallbacks.forEach((cb) => cb(data.messages ?? []));
+      } else if (data.type === "message") {
+        listeners.forEach((l) => l(data.message));
+      }
+    } catch {}
+  };
 
-  channel.on("message:new", (msg: Message) => {
-    listeners.forEach((l) => l(msg));
-  });
+  ws.onerror = (e) => console.error("[ws] error", e);
+  ws.onclose = () => { ws = null; };
 
   return () => {
-    channel?.leave();
-    channel = null;
+    ws?.close();
+    ws = null;
     currentRoomId = null;
-    return;
   };
 }
 
 export function sendMessage(content: string) {
-  channel?.push("message:send", { content });
+  if (ws?.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: "message", content }));
+  }
 }
 
 export function sendTyping() {
-  channel?.push("typing:start", {});
+  if (ws?.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: "typing" }));
+  }
 }
 
 export function onMessage(listener: MessageListener): () => void {
