@@ -10,11 +10,10 @@ interface Props {
 }
 
 export function MessageBox({ replyTo, onReplyCancel }: Props) {
-  const { activeRoom, user } = useStore();
+  const { activeRoom, user, appendMessage } = useStore();
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-resize textarea
   useEffect(() => {
     const ta = textareaRef.current;
     if (!ta) return;
@@ -22,21 +21,31 @@ export function MessageBox({ replyTo, onReplyCancel }: Props) {
     ta.style.height = `${Math.min(ta.scrollHeight, 200)}px`;
   }, [value]);
 
-  // Focus when room changes
   useEffect(() => {
     textareaRef.current?.focus();
   }, [activeRoom?.id]);
 
   const send = useCallback(() => {
     const trimmed = value.trim();
-    if (!trimmed || !activeRoom) return;
-    sendMessage(trimmed, user?.id ?? "anon", user?.displayName ?? "Unknown", "user");
+    if (!trimmed || !activeRoom || !user) return;
+
+    // Optimistic: append immediately so the user sees it right away
+    const optimistic = {
+      id: `optimistic-${Date.now()}`,
+      roomId: activeRoom.id,
+      senderId: user.id,
+      senderName: user.displayName,
+      senderType: "user" as const,
+      content: trimmed,
+      createdAt: new Date().toISOString(),
+    };
+    appendMessage(optimistic);
+
+    sendMessage(trimmed, user.id, user.displayName, "user");
     setValue("");
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-    }
+    if (textareaRef.current) textareaRef.current.style.height = "auto";
     onReplyCancel?.();
-  }, [value, activeRoom, user, onReplyCancel]);
+  }, [value, activeRoom, user, appendMessage, onReplyCancel]);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -54,12 +63,9 @@ export function MessageBox({ replyTo, onReplyCancel }: Props) {
         replyTo && "rounded-t-none"
       )}>
         <div className="flex items-end px-3 gap-2">
-          {/* Attachment */}
           <button className="text-zinc-400 hover:text-zinc-200 transition-colors shrink-0 pb-2.5">
             <Paperclip className="w-5 h-5" />
           </button>
-
-          {/* Textarea */}
           <textarea
             ref={textareaRef}
             rows={1}
@@ -69,8 +75,6 @@ export function MessageBox({ replyTo, onReplyCancel }: Props) {
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={onKeyDown}
           />
-
-          {/* Emoji */}
           <button className="text-zinc-400 hover:text-zinc-200 transition-colors shrink-0 pb-2.5">
             <Smile className="w-5 h-5" />
           </button>

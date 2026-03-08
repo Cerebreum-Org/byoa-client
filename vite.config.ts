@@ -9,7 +9,11 @@ export default defineConfig(({ command }) => ({
   base: command === "build" ? "./" : "/",
   server: {
     proxy: {
-      "/api": { target: "http://localhost:3000", changeOrigin: true },
+      "/api": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+        ws: true, // proxy WebSocket too
+      },
     },
   },
 }));

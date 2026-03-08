@@ -31,7 +31,7 @@ export function ServerList() {
           const active = w.id === activeWorkspace?.id;
           return (
             <Tooltip key={w.id}>
-              <TooltipTrigger asChild>
+              <TooltipTrigger>
                 <div
                   className="electron-no-drag relative flex justify-center w-full group cursor-pointer"
                   onClick={() => select(w)}
@@ -54,7 +54,7 @@ export function ServerList() {
         <div className="w-8 h-px bg-zinc-700 my-1 shrink-0" />
 
         <Tooltip>
-          <TooltipTrigger asChild>
+          <TooltipTrigger>
             <div
               className="electron-no-drag w-12 h-12 rounded-full bg-zinc-700 hover:bg-green-600 hover:rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-150 text-green-400 hover:text-white shrink-0"
               onClick={createWs}
