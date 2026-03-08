@@ -23,49 +23,51 @@ export function ServerList() {
 
   return (
     <TooltipProvider delay={300}>
-      <nav className="electron-drag flex flex-col items-center bg-zinc-900 w-[72px] h-full py-3 gap-2 shrink-0 overflow-y-auto overflow-x-hidden">
-        {/* Traffic light spacer — only visible in Electron on macOS */}
-        <div className="electron-no-drag h-5 w-full shrink-0 is-electron:block hidden" />
+      <nav className="electron-drag flex flex-col items-center bg-zinc-900 w-[72px] h-full overflow-y-auto overflow-x-hidden shrink-0">
+        {/* macOS traffic light clearance — 52px covers buttons at y=14 */}
+        <div className="h-[52px] w-full shrink-0" />
 
-        {workspaces.map((w) => {
-          const active = w.id === activeWorkspace?.id;
-          return (
-            <Tooltip key={w.id}>
-              <TooltipTrigger>
-                <div
-                  className="electron-no-drag relative flex justify-center w-full group cursor-pointer"
-                  onClick={() => select(w)}
-                >
-                  <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 bg-white rounded-r transition-all duration-150 ${active ? "h-8" : "h-0 group-hover:h-5"}`} />
-                  <div className={`w-12 h-12 flex items-center justify-center font-bold text-lg transition-all duration-150 overflow-hidden ${active ? "rounded-2xl bg-indigo-600 text-white" : "rounded-full bg-zinc-700 text-zinc-300 group-hover:rounded-2xl group-hover:bg-indigo-600 group-hover:text-white"}`}>
-                    {w.iconUrl
-                      ? <img src={w.iconUrl} alt={w.name} className="w-full h-full object-cover" />
-                      : w.name[0].toUpperCase()}
+        <div className="flex flex-col items-center gap-2 w-full pb-3">
+          {workspaces.map((w) => {
+            const active = w.id === activeWorkspace?.id;
+            return (
+              <Tooltip key={w.id}>
+                <TooltipTrigger>
+                  <div
+                    className="electron-no-drag relative flex justify-center w-[72px] group cursor-pointer"
+                    onClick={() => select(w)}
+                  >
+                    <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 bg-white rounded-r transition-all duration-150 ${active ? "h-8" : "h-0 group-hover:h-5"}`} />
+                    <div className={`w-12 h-12 flex items-center justify-center font-bold text-lg transition-all duration-150 overflow-hidden ${active ? "rounded-2xl bg-indigo-600 text-white" : "rounded-full bg-zinc-700 text-zinc-300 group-hover:rounded-2xl group-hover:bg-indigo-600 group-hover:text-white"}`}>
+                      {w.iconUrl
+                        ? <img src={w.iconUrl} alt={w.name} className="w-full h-full object-cover" />
+                        : w.name[0].toUpperCase()}
+                    </div>
                   </div>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                <p>{w.name}</p>
-              </TooltipContent>
-            </Tooltip>
-          );
-        })}
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>{w.name}</p>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
 
-        <div className="w-8 h-px bg-zinc-700 my-1 shrink-0" />
+          <div className="w-8 h-px bg-zinc-700 my-1 shrink-0" />
 
-        <Tooltip>
-          <TooltipTrigger>
-            <div
-              className="electron-no-drag w-12 h-12 rounded-full bg-zinc-700 hover:bg-green-600 hover:rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-150 text-green-400 hover:text-white shrink-0"
-              onClick={createWs}
-            >
-              <Plus className="w-5 h-5" />
-            </div>
-          </TooltipTrigger>
-          <TooltipContent side="right">
-            <p>Add Workspace</p>
-          </TooltipContent>
-        </Tooltip>
+          <Tooltip>
+            <TooltipTrigger>
+              <div
+                className="electron-no-drag w-12 h-12 rounded-full bg-zinc-700 hover:bg-green-600 hover:rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-150 text-green-400 hover:text-white"
+                onClick={createWs}
+              >
+                <Plus className="w-5 h-5" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>Add Workspace</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </nav>
     </TooltipProvider>
   );

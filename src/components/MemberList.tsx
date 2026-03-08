@@ -10,7 +10,7 @@ const STUB_MEMBERS = [
 
 export function MemberList() {
   return (
-    <div className="flex flex-col bg-zinc-800 w-60 h-full p-3 shrink-0">
+    <div className="flex flex-col bg-zinc-800 w-60 h-full p-3 shrink-0 overflow-hidden">
       <p className="text-xs text-zinc-500 font-semibold uppercase tracking-wide mb-2">
         Members — {STUB_MEMBERS.length}
       </p>

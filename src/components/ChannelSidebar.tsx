@@ -28,7 +28,7 @@ export function ChannelSidebar() {
   return (
     <div className="flex flex-col bg-zinc-800 w-60 h-full shrink-0">
       {/* Header */}
-      <div className="h-12 flex items-center justify-between px-4 border-b border-zinc-700 cursor-pointer hover:bg-zinc-700/50 transition-colors shrink-0">
+      <div className="electron-drag h-12 flex items-center justify-between px-4 border-b border-zinc-700 cursor-pointer hover:bg-zinc-700/50 transition-colors shrink-0">
         <span className="font-semibold text-zinc-100 truncate">
           {activeWorkspace?.name ?? "Select a workspace"}
         </span>
