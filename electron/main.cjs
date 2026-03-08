@@ -1,6 +1,5 @@
 const { app, BrowserWindow, shell } = require('electron');
 const path = require('path');
-const { createServer } = require('http');
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
@@ -11,7 +10,8 @@ function createWindow() {
     minWidth: 900,
     minHeight: 600,
     titleBarStyle: 'hiddenInset',
-    backgroundColor: '#1a1a2e',
+    trafficLightPosition: { x: 14, y: 14 },
+    backgroundColor: '#18181b',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
@@ -21,12 +21,10 @@ function createWindow() {
 
   if (isDev) {
     win.loadURL('http://localhost:5173');
-    win.webContents.openDevTools();
   } else {
     win.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 
-  // Open external links in browser
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: 'deny' };

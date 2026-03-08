@@ -89,3 +89,14 @@ a { color: inherit; text-decoration: none; }
     @apply bg-background text-foreground; }
   html {
     @apply font-sans; } }
+/* Electron: macOS traffic light clearance */
+.electron-drag {
+  -webkit-app-region: drag;
+}
+.electron-no-drag {
+  -webkit-app-region: no-drag;
+}
+/* Push content below the traffic lights (72px server list, top 12px of sidebar header) */
+body.is-electron .electron-traffic-offset {
+  padding-top: 28px;
+}

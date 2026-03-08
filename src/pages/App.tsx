@@ -19,7 +19,7 @@ export function App() {
         if (rooms.length > 0) setActiveRoom(rooms[0]);
       }
     });
-  }, [setWorkspaces, setActiveWorkspace, setRooms]);
+  }, [setWorkspaces, setActiveWorkspace, setRooms, setActiveRoom]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-zinc-900 text-zinc-100">

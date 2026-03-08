@@ -36,7 +36,7 @@ export function MessageBox({ replyTo, onReplyCancel }: Props) {
       textareaRef.current.style.height = "auto";
     }
     onReplyCancel?.();
-  }, [value, activeRoom, onReplyCancel]);
+  }, [value, activeRoom, user, onReplyCancel]);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {

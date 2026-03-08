@@ -9,6 +9,11 @@ import { connectSocket } from "@/api/socket";
 import { useStore } from "@/store";
 import type { User } from "@/api/client";
 
+// Mark body as electron for CSS targeting
+if ((window as any).electronAPI) {
+  document.body.classList.add("is-electron");
+}
+
 function Root() {
   const { user, setUser } = useStore();
   const [page, setPage] = useState<"login" | "register">("login");
@@ -25,15 +30,12 @@ function Root() {
   };
 
   useEffect(() => {
-    // Try real session first; fall back to dev user if backend unavailable
     api.me()
       .then(boot)
       .catch(() =>
-        // No active session — auto-login dev account
         api.login({ email: "dev@byoa.local", password: "byoadev123" })
           .then((res) => boot(res.user))
           .catch(() => {
-            // Backend unavailable — fall back to offline dev user
             setUser({ id: "dev-user", email: "dev@byoa.local", username: "hypereum", displayName: "Hypereum", avatarUrl: null });
           })
       )
