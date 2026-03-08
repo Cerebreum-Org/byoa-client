@@ -7,7 +7,7 @@ import { api } from "@/api/client";
 import { useEffect } from "react";
 
 export function App() {
-  const { setWorkspaces, setActiveWorkspace, setRooms } = useStore();
+  const { setWorkspaces, setActiveWorkspace, setRooms, setActiveRoom } = useStore();
 
   useEffect(() => {
     api.getWorkspaces().then(async (workspaces) => {
@@ -16,6 +16,7 @@ export function App() {
         setActiveWorkspace(workspaces[0]);
         const rooms = await api.getRooms(workspaces[0].id);
         setRooms(rooms);
+        if (rooms.length > 0) setActiveRoom(rooms[0]);
       }
     });
   }, [setWorkspaces, setActiveWorkspace, setRooms]);

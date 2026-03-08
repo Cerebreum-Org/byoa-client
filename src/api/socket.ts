@@ -12,7 +12,24 @@ export async function connectSocket(token: string): Promise<void> {
   // Connection is established per-room via joinRoom
 }
 
+let _cleanupTimer: ReturnType<typeof setTimeout> | null = null;
+
 export function joinRoom(roomId: string, onMessages: (msgs: Message[]) => void): () => void {
+  // Cancel any pending cleanup (handles React StrictMode double-invoke)
+  if (_cleanupTimer !== null) {
+    clearTimeout(_cleanupTimer);
+    _cleanupTimer = null;
+    // Already connected to this room — just update callback
+    if (currentRoomId === roomId) {
+      joinCallbacks = [onMessages];
+      return () => {
+        _cleanupTimer = setTimeout(() => {
+          ws?.close(); ws = null; currentRoomId = null;
+        }, 100);
+      };
+    }
+  }
+
   // Close previous connection if switching rooms
   if (currentRoomId !== roomId && ws) {
     ws.close();
@@ -40,9 +57,9 @@ export function joinRoom(roomId: string, onMessages: (msgs: Message[]) => void):
   ws.onclose = () => { ws = null; };
 
   return () => {
-    ws?.close();
-    ws = null;
-    currentRoomId = null;
+    _cleanupTimer = setTimeout(() => {
+      ws?.close(); ws = null; currentRoomId = null; _cleanupTimer = null;
+    }, 100);
   };
 }
 
