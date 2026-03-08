@@ -112,14 +112,14 @@ export function ChatArea() {
             >
               {!grouped && (
                 <div className={`w-10 h-10 rounded-full shrink-0 mt-0.5 flex items-center justify-center text-sm font-bold ${msg.senderType === "agent" ? "bg-indigo-600" : "bg-zinc-700"}`}>
-                  {msg.senderType === "agent" ? "⚡" : msg.senderName[0]?.toUpperCase()}
+                  {msg.senderType === "agent" ? "⚡" : (msg.senderName?.[0]?.toUpperCase() ?? "?")}
                 </div>
               )}
               <div className="flex-1 min-w-0">
                 {!grouped && (
                   <div className="flex items-baseline gap-2 mb-0.5">
                     <span className={`font-semibold text-sm ${msg.senderType === "agent" ? "text-indigo-400" : "text-zinc-100"}`}>
-                      {msg.senderName}
+                      {msg.senderName ?? "Unknown"}
                     </span>
                     {msg.senderType === "agent" && (
                       <span className="text-[10px] bg-indigo-600 text-white px-1 rounded font-semibold tracking-wide">AGENT</span>
