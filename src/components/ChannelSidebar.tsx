@@ -1,9 +1,11 @@
 import { useStore } from "@/store";
 import { api } from "@/api/client";
 import { socket } from "@/api/ws";
+import { Hash, Plus, ChevronDown, Circle } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Room } from "@/api/client";
-
-const s = (style: React.CSSProperties) => style;
 
 export function ChannelSidebar() {
   const { activeWorkspace, rooms, activeRoom, setActiveRoom, setMessages, user } = useStore();
@@ -24,56 +26,64 @@ export function ChannelSidebar() {
   };
 
   return (
-    <div style={s({ width: "var(--sidebar-width)", background: "var(--bg-secondary)", display: "flex", flexDirection: "column", flexShrink: 0 })}>
-      {/* Server name header */}
-      <div style={s({ padding: "0 16px", height: 48, display: "flex", alignItems: "center", borderBottom: "1px solid var(--bg-floating)", fontWeight: 600, fontSize: 15, cursor: "pointer" })}>
-        {activeWorkspace?.name ?? "Select a workspace"}
+    <div className="flex flex-col bg-zinc-800 w-60 h-full shrink-0">
+      {/* Header */}
+      <div className="h-12 flex items-center justify-between px-4 border-b border-zinc-700 cursor-pointer hover:bg-zinc-700/50 transition-colors shrink-0">
+        <span className="font-semibold text-zinc-100 truncate">
+          {activeWorkspace?.name ?? "Select a workspace"}
+        </span>
+        <ChevronDown className="w-4 h-4 text-zinc-400 shrink-0" />
       </div>
 
       {/* Channel list */}
-      <div style={s({ flex: 1, overflowY: "auto", padding: "8px 0" })}>
-        <div style={s({ padding: "16px 8px 4px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" })}>
-          <span style={s({ fontSize: 11, fontWeight: 700, letterSpacing: .5, color: "var(--text-muted)", textTransform: "uppercase" })}>Text Channels</span>
+      <ScrollArea className="flex-1 px-2 py-2">
+        <div className="flex items-center justify-between px-2 mb-1">
+          <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide">Text Channels</span>
           {activeWorkspace && (
-            <button onClick={createRoom} style={s({ color: "var(--text-muted)", fontSize: 18, lineHeight: 1, padding: "0 4px" })} title="Add channel">+</button>
+            <button onClick={createRoom} className="text-zinc-500 hover:text-zinc-200 transition-colors">
+              <Plus className="w-4 h-4" />
+            </button>
           )}
         </div>
 
-        {rooms.map((room) => (
-          <div
-            key={room.id}
-            onClick={() => select(room)}
-            style={s({
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "1px 8px",
-              margin: "1px 8px",
-              borderRadius: 4,
-              cursor: "pointer",
-              color: room.id === activeRoom?.id ? "var(--channel-active)" : "var(--channel-default)",
-              background: room.id === activeRoom?.id ? "rgba(255,255,255,.08)" : "transparent",
-              fontSize: 15,
-              fontWeight: room.id === activeRoom?.id ? 500 : 400,
-            })}
-          >
-            <span style={s({ color: "var(--text-muted)", fontSize: 18, width: 18, textAlign: "center" })}>#</span>
-            {room.name}
-          </div>
-        ))}
-      </div>
+        {rooms.map((room) => {
+          const active = room.id === activeRoom?.id;
+          return (
+            <div
+              key={room.id}
+              onClick={() => select(room)}
+              className={`flex items-center gap-1.5 px-2 py-1 rounded mx-0 cursor-pointer transition-colors ${
+                active
+                  ? "bg-zinc-700 text-zinc-100"
+                  : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"
+              }`}
+            >
+              <Hash className="w-4 h-4 shrink-0" />
+              <span className={`text-sm truncate ${active ? "font-medium" : ""}`}>{room.name}</span>
+            </div>
+          );
+        })}
+      </ScrollArea>
 
       {/* User panel */}
       {user && (
-        <div style={s({ height: 52, background: "var(--bg-floating)", display: "flex", alignItems: "center", padding: "0 8px", gap: 8 })}>
-          <div style={s({ width: 32, height: 32, borderRadius: "50%", background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, flexShrink: 0 })}>
-            {user.displayName[0].toUpperCase()}
+        <>
+          <Separator className="bg-zinc-700" />
+          <div className="h-[52px] bg-zinc-900 flex items-center px-2 gap-2 shrink-0">
+            <div className="relative">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="text-xs bg-indigo-600 text-white font-bold">
+                  {user.displayName[0].toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <Circle className="absolute -bottom-0.5 -right-0.5 h-3 w-3 fill-green-500 text-green-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold text-zinc-100 truncate">{user.displayName}</div>
+              <div className="text-[11px] text-zinc-500">@{user.username}</div>
+            </div>
           </div>
-          <div style={s({ flex: 1, minWidth: 0 })}>
-            <div style={s({ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" })}>{user.displayName}</div>
-            <div style={s({ fontSize: 11, color: "var(--text-muted)" })}>@{user.username}</div>
-          </div>
-        </div>
+        </>
       )}
     </div>
   );
