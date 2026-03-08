@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useStore } from "@/store";
-import { joinRoom, onMessage } from "@/api/socket";
+import { joinRoom, onMessage, onPresence } from "@/api/socket";
 import { formatDistanceToNow } from "date-fns";
 import { Hash } from "lucide-react";
 import { MessageBox } from "@/components/MessageBox";
@@ -16,7 +16,7 @@ interface ReplyTarget {
 }
 
 export function ChatArea() {
-  const { activeRoom, messagesByRoom, appendMessage, setMessages } = useStore();
+  const { activeRoom, messagesByRoom, appendMessage, setMessages, setPresenceUsers } = useStore();
   const messages = activeRoom ? (messagesByRoom[activeRoom.id] ?? []) : [];
   const [reply, setReply] = useState<ReplyTarget | null>(null);
   const [atBottom, setAtBottom] = useState(true);
@@ -35,6 +35,10 @@ export function ChatArea() {
     const roomId = activeRoom?.id ?? "";
     return onMessage((msg) => appendMessage(roomId, msg));
   }, [activeRoom?.id, appendMessage]);
+
+  useEffect(() => {
+    return onPresence((users) => setPresenceUsers(users));
+  }, [setPresenceUsers]);
 
   useEffect(() => {
     if (atBottom) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -76,7 +80,7 @@ export function ChatArea() {
         )}
       </div>
 
-      {/* Messages — plain div so onScroll fires reliably */}
+      {/* Messages */}
       <div
         ref={scrollRef}
         className="flex-1 px-4 py-4 overflow-y-auto"
@@ -98,6 +102,8 @@ export function ChatArea() {
             prev?.senderType === msg.senderType &&
             new Date(msg.createdAt).getTime() - new Date(prev.createdAt).getTime() < 5 * 60 * 1000;
 
+          const ownerUsername = (msg as Message & { ownerUsername?: string }).ownerUsername;
+
           return (
             <div
               key={msg.id}
@@ -117,6 +123,9 @@ export function ChatArea() {
                     </span>
                     {msg.senderType === "agent" && (
                       <span className="text-[10px] bg-indigo-600 text-white px-1 rounded font-semibold tracking-wide">AGENT</span>
+                    )}
+                    {msg.senderType === "agent" && ownerUsername && (
+                      <span className="text-[11px] text-zinc-500">for @{ownerUsername}</span>
                     )}
                     <span className="text-[11px] text-zinc-500">
                       {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}

@@ -1,9 +1,11 @@
 import type { Message } from "./client";
 
+export interface PresenceUser { id: string; name: string; type: string }
+
 type WSEvent =
   | { type: "history"; messages: Message[] }
   | { type: "message"; message: Message }
-  | { type: "presence"; users: string[] };
+  | { type: "presence"; users: PresenceUser[] };
 
 type Listener = (event: WSEvent) => void;
 
@@ -11,22 +13,31 @@ class RoomSocket {
   private ws: WebSocket | null = null;
   private roomId: string | null = null;
   private token: string | undefined;
+  private senderId: string | undefined;
+  private senderName: string | undefined;
+  private senderType: string | undefined;
   private listeners = new Set<Listener>();
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
-  connect(roomId: string, token?: string) {
+  connect(roomId: string, opts?: { token?: string; senderId?: string; senderName?: string; senderType?: string }) {
     if (this.ws && this.roomId === roomId) return;
     this.disconnect();
     this.roomId = roomId;
-    this.token = token;
+    this.token = opts?.token;
+    this.senderId = opts?.senderId;
+    this.senderName = opts?.senderName;
+    this.senderType = opts?.senderType ?? "user";
     this._open();
   }
 
   private _open() {
     const roomId = this.roomId!;
     const proto = location.protocol === "https:" ? "wss:" : "ws:";
-    const params = new URLSearchParams({ roomId: roomId });
+    const params = new URLSearchParams({ roomId });
     if (this.token) params.set("token", this.token);
+    if (this.senderId) params.set("senderId", this.senderId);
+    if (this.senderName) params.set("senderName", this.senderName);
+    if (this.senderType) params.set("senderType", this.senderType);
     this.ws = new WebSocket(`${proto}//${location.host}/api/ws?${params}`);
 
     this.ws.onmessage = (e) => {

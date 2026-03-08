@@ -80,6 +80,7 @@ export interface Message {
   senderType: "user" | "agent";
   content: string;
   createdAt: string;
+  ownerUsername?: string;
 }
 
 export interface Agent {

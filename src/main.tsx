@@ -5,7 +5,7 @@ import { Login } from "@/pages/Login";
 import { Register } from "@/pages/Register";
 import { App } from "@/pages/App";
 import { api } from "@/api/client";
-import { connectSocket } from "@/api/socket";
+import { connectSocket, setSocketUser } from "@/api/socket";
 import { useStore } from "@/store";
 import type { User } from "@/api/client";
 
@@ -21,6 +21,7 @@ function Root() {
 
   const boot = async (u: User) => {
     setUser(u);
+    setSocketUser({ id: u.id, displayName: u.displayName });
     try {
       const { token } = await api.wsToken();
       await connectSocket(token);
@@ -36,7 +37,9 @@ function Root() {
         api.login({ email: "dev@byoa.local", password: "byoadev123" })
           .then((res) => boot(res.user))
           .catch(() => {
-            setUser({ id: "dev-user", email: "dev@byoa.local", username: "hypereum", displayName: "Hypereum", avatarUrl: null });
+            const devUser = { id: "dev-user", email: "dev@byoa.local", username: "hypereum", displayName: "Hypereum", avatarUrl: null };
+            setUser(devUser);
+            setSocketUser({ id: devUser.id, displayName: devUser.displayName });
           })
       )
       .finally(() => setLoading(false));
