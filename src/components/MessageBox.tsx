@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function MessageBox({ replyTo, onReplyCancel }: Props) {
-  const { activeRoom, user, appendMessage } = useStore();
+  const { activeRoom, user } = useStore();
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -29,23 +29,11 @@ export function MessageBox({ replyTo, onReplyCancel }: Props) {
     const trimmed = value.trim();
     if (!trimmed || !activeRoom || !user) return;
 
-    // Optimistic: append immediately so the user sees it right away
-    const optimistic = {
-      id: `optimistic-${Date.now()}`,
-      roomId: activeRoom.id,
-      senderId: user.id,
-      senderName: user.displayName,
-      senderType: "user" as const,
-      content: trimmed,
-      createdAt: new Date().toISOString(),
-    };
-    appendMessage(activeRoom.id, optimistic);
-
     sendMessage(trimmed, user.id, user.displayName, "user");
     setValue("");
     if (textareaRef.current) textareaRef.current.style.height = "auto";
     onReplyCancel?.();
-  }, [value, activeRoom, user, appendMessage, onReplyCancel]);
+  }, [value, activeRoom, user, onReplyCancel]);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
