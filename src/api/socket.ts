@@ -22,7 +22,7 @@ export function joinRoom(roomId: string, onMessages: (msgs: Message[]) => void):
   currentRoomId = roomId;
   joinCallbacks = [onMessages];
 
-  const url = `ws://localhost:3000/api/ws?roomId=${roomId}${currentToken ? `&token=${currentToken}` : ""}`;
+  const url = `ws://localhost:3002?roomId=${roomId}${currentToken ? `&token=${currentToken}` : ""}`;
   ws = new WebSocket(url);
 
   ws.onmessage = (event) => {
@@ -46,9 +46,9 @@ export function joinRoom(roomId: string, onMessages: (msgs: Message[]) => void):
   };
 }
 
-export function sendMessage(content: string) {
+export function sendMessage(content: string, senderId: string, senderName: string, senderType: "user" | "agent" = "user") {
   if (ws?.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({ type: "message", content }));
+    ws.send(JSON.stringify({ type: "message", content, senderId, senderName, senderType }));
   }
 }
 

@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function MessageBox({ replyTo, onReplyCancel }: Props) {
-  const { activeRoom } = useStore();
+  const { activeRoom, user } = useStore();
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -30,7 +30,7 @@ export function MessageBox({ replyTo, onReplyCancel }: Props) {
   const send = useCallback(() => {
     const trimmed = value.trim();
     if (!trimmed || !activeRoom) return;
-    sendMessage(trimmed);
+    sendMessage(trimmed, user?.id ?? "anon", user?.displayName ?? "Unknown", "user");
     setValue("");
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
