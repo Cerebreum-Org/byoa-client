@@ -2,23 +2,21 @@ import { useEffect, useRef, useState } from "react";
 import { useStore } from "@/store";
 import { joinRoom, sendMessage, onMessage } from "@/api/socket";
 import { formatDistanceToNow } from "date-fns";
+import { Hash } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Message } from "@/api/client";
-
-const s = (style: React.CSSProperties) => style;
 
 export function ChatArea() {
   const { activeRoom, messages, appendMessage, setMessages } = useStore();
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Join Phoenix Channel when room changes
   useEffect(() => {
     if (!activeRoom) return;
     const leave = joinRoom(activeRoom.id, (msgs: Message[]) => setMessages(msgs));
     return () => { leave(); };
   }, [activeRoom?.id, setMessages]);
 
-  // Listen for incoming messages
   useEffect(() => {
     return onMessage((msg) => appendMessage(msg));
   }, [appendMessage]);
@@ -35,34 +33,34 @@ export function ChatArea() {
 
   if (!activeRoom) {
     return (
-      <div style={s({ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-primary)", color: "var(--text-muted)", flexDirection: "column", gap: 12 })}>
-        <div style={s({ fontSize: 48 })}>👋</div>
-        <div style={s({ fontSize: 20, fontWeight: 600, color: "var(--text-primary)" })}>No channel selected</div>
-        <div style={s({ fontSize: 14 })}>Pick a channel from the sidebar to start chatting</div>
+      <div className="flex flex-col flex-1 items-center justify-center bg-zinc-900 text-zinc-400 gap-3">
+        <div className="text-5xl">👋</div>
+        <div className="text-xl font-semibold text-zinc-100">No channel selected</div>
+        <div className="text-sm">Pick a channel from the sidebar to start chatting</div>
       </div>
     );
   }
 
   return (
-    <div style={s({ flex: 1, display: "flex", flexDirection: "column", background: "var(--bg-primary)", minWidth: 0 })}>
+    <div className="flex flex-col flex-1 bg-zinc-900 min-w-0 h-full">
       {/* Header */}
-      <div style={s({ height: 48, borderBottom: "1px solid var(--bg-floating)", display: "flex", alignItems: "center", padding: "0 16px", gap: 8, flexShrink: 0 })}>
-        <span style={s({ color: "var(--text-muted)", fontSize: 22, fontWeight: 300 })}>#</span>
-        <span style={s({ fontWeight: 600, fontSize: 15 })}>{activeRoom.name}</span>
+      <div className="h-12 flex items-center px-4 gap-2 bg-zinc-800 border-b border-zinc-700 shrink-0">
+        <Hash className="text-zinc-400 w-5 h-5" />
+        <span className="font-semibold text-zinc-100">{activeRoom.name}</span>
         {activeRoom.description && (
           <>
-            <div style={s({ width: 1, height: 20, background: "var(--border)", margin: "0 4px" })} />
-            <span style={s({ fontSize: 13, color: "var(--text-muted)" })}>{activeRoom.description}</span>
+            <div className="w-px h-5 bg-zinc-600 mx-1" />
+            <span className="text-sm text-zinc-400">{activeRoom.description}</span>
           </>
         )}
       </div>
 
       {/* Messages */}
-      <div style={s({ flex: 1, overflowY: "auto", padding: "16px 0 8px" })}>
+      <ScrollArea className="flex-1 px-4 py-4">
         {messages.length === 0 && (
-          <div style={s({ padding: "0 16px 16px", borderBottom: "1px solid var(--border)", marginBottom: 16 })}>
-            <div style={s({ fontSize: 36, marginBottom: 8 })}>#{activeRoom.name}</div>
-            <div style={s({ fontSize: 15, color: "var(--text-secondary)" })}>This is the beginning of <strong>#{activeRoom.name}</strong>.</div>
+          <div className="pb-4 border-b border-zinc-700 mb-4">
+            <div className="text-4xl font-bold text-zinc-100 mb-1">#{activeRoom.name}</div>
+            <div className="text-sm text-zinc-400">This is the beginning of <strong className="text-zinc-200">#{activeRoom.name}</strong>.</div>
           </div>
         )}
 
@@ -72,33 +70,42 @@ export function ChatArea() {
             new Date(msg.createdAt).getTime() - new Date(prev.createdAt).getTime() < 5 * 60 * 1000;
 
           return (
-            <div key={msg.id} style={s({ padding: grouped ? "1px 16px 1px 72px" : "4px 16px", display: "flex", gap: 16 })}>
+            <div
+              key={msg.id}
+              className={`flex gap-3 rounded px-2 group hover:bg-zinc-800/50 ${grouped ? "pl-14 py-0.5" : "py-1"}`}
+            >
               {!grouped && (
-                <div style={s({ width: 40, height: 40, borderRadius: "50%", flexShrink: 0, marginTop: 2, background: msg.senderType === "agent" ? "#5865f2" : "var(--bg-tertiary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 700 })}>
+                <div className={`w-10 h-10 rounded-full shrink-0 mt-0.5 flex items-center justify-center text-sm font-bold ${msg.senderType === "agent" ? "bg-indigo-600" : "bg-zinc-700"}`}>
                   {msg.senderType === "agent" ? "⚡" : msg.senderName[0]?.toUpperCase()}
                 </div>
               )}
-              <div style={s({ flex: 1, minWidth: 0 })}>
+              <div className="flex-1 min-w-0">
                 {!grouped && (
-                  <div style={s({ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 2 })}>
-                    <span style={s({ fontWeight: 500, fontSize: 15, color: msg.senderType === "agent" ? "#5865f2" : "var(--text-primary)" })}>{msg.senderName}</span>
-                    {msg.senderType === "agent" && <span style={s({ fontSize: 10, background: "#5865f2", color: "#fff", padding: "0 4px", borderRadius: 3, fontWeight: 600, letterSpacing: .3 })}>AGENT</span>}
-                    <span style={s({ fontSize: 11, color: "var(--text-muted)" })}>{formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}</span>
+                  <div className="flex items-baseline gap-2 mb-0.5">
+                    <span className={`font-semibold text-sm ${msg.senderType === "agent" ? "text-indigo-400" : "text-zinc-100"}`}>
+                      {msg.senderName}
+                    </span>
+                    {msg.senderType === "agent" && (
+                      <span className="text-[10px] bg-indigo-600 text-white px-1 rounded font-semibold tracking-wide">AGENT</span>
+                    )}
+                    <span className="text-[11px] text-zinc-500">
+                      {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
+                    </span>
                   </div>
                 )}
-                <p style={s({ fontSize: 15, color: "var(--text-primary)", wordBreak: "break-word", lineHeight: 1.375 })}>{msg.content}</p>
+                <p className="text-sm text-zinc-200 leading-relaxed break-words">{msg.content}</p>
               </div>
             </div>
           );
         })}
         <div ref={bottomRef} />
-      </div>
+      </ScrollArea>
 
       {/* Input */}
-      <div style={s({ padding: "0 16px 24px", flexShrink: 0 })}>
-        <div style={s({ background: "var(--bg-input)", borderRadius: 8, display: "flex", alignItems: "center", padding: "0 16px", gap: 8 })}>
+      <div className="px-4 pb-6 shrink-0">
+        <div className="bg-zinc-700 rounded-lg flex items-center px-4 gap-3">
           <input
-            style={s({ flex: 1, height: 44, fontSize: 15, color: "var(--text-primary)", background: "none" })}
+            className="flex-1 h-11 bg-transparent text-sm text-zinc-100 placeholder:text-zinc-500 outline-none"
             placeholder={`Message #${activeRoom.name}`}
             value={input}
             onChange={(e) => setInput(e.target.value)}
