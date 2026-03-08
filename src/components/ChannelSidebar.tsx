@@ -14,7 +14,7 @@ export function ChannelSidebar() {
     setActiveRoom(room);
     socket.connect(room.id);
     const msgs = await api.getMessages(room.id);
-    setMessages(msgs);
+    setMessages(room.id, msgs);
   };
 
   const createRoom = async () => {

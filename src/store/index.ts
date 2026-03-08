@@ -7,15 +7,16 @@ interface Store {
   activeWorkspace: Workspace | null;
   rooms: Room[];
   activeRoom: Room | null;
-  messages: Message[];
+  // Keyed by roomId so switching channels never wipes another room's history
+  messagesByRoom: Record<string, Message[]>;
 
   setUser: (u: User | null) => void;
   setWorkspaces: (ws: Workspace[]) => void;
   setActiveWorkspace: (w: Workspace | null) => void;
   setRooms: (r: Room[]) => void;
   setActiveRoom: (r: Room | null) => void;
-  setMessages: (m: Message[]) => void;
-  appendMessage: (m: Message) => void;
+  setMessages: (roomId: string, m: Message[]) => void;
+  appendMessage: (roomId: string, m: Message) => void;
 }
 
 export const useStore = create<Store>((set) => ({
@@ -24,13 +25,22 @@ export const useStore = create<Store>((set) => ({
   activeWorkspace: null,
   rooms: [],
   activeRoom: null,
-  messages: [],
+  messagesByRoom: {},
 
   setUser: (user) => set({ user }),
   setWorkspaces: (workspaces) => set({ workspaces }),
   setActiveWorkspace: (activeWorkspace) => set({ activeWorkspace }),
   setRooms: (rooms) => set({ rooms }),
   setActiveRoom: (activeRoom) => set({ activeRoom }),
-  setMessages: (messages) => set({ messages }),
-  appendMessage: (m) => set((s) => ({ messages: [...s.messages, m] })),
+
+  setMessages: (roomId, msgs) =>
+    set((s) => ({ messagesByRoom: { ...s.messagesByRoom, [roomId]: msgs } })),
+
+  appendMessage: (roomId, msg) =>
+    set((s) => ({
+      messagesByRoom: {
+        ...s.messagesByRoom,
+        [roomId]: [...(s.messagesByRoom[roomId] ?? []), msg],
+      },
+    })),
 }));

@@ -16,7 +16,8 @@ interface ReplyTarget {
 }
 
 export function ChatArea() {
-  const { activeRoom, messages, appendMessage, setMessages } = useStore();
+  const { activeRoom, messagesByRoom, appendMessage, setMessages } = useStore();
+  const messages = activeRoom ? (messagesByRoom[activeRoom.id] ?? []) : [];
   const [reply, setReply] = useState<ReplyTarget | null>(null);
   const [atBottom, setAtBottom] = useState(true);
   const [typingUsers] = useState<string[]>([]);
@@ -26,12 +27,12 @@ export function ChatArea() {
   useEffect(() => {
     if (!activeRoom) return;
     setReply(null);
-    const leave = joinRoom(activeRoom.id, (msgs: Message[]) => setMessages(msgs));
+    const leave = joinRoom(activeRoom.id, (msgs: Message[]) => setMessages(activeRoom.id, msgs));
     return () => { leave(); };
   }, [activeRoom?.id, setMessages]);
 
   useEffect(() => {
-    return onMessage((msg) => appendMessage(msg));
+    return onMessage((msg) => appendMessage(activeRoom?.id ?? "", msg));
   }, [appendMessage]);
 
   useEffect(() => {

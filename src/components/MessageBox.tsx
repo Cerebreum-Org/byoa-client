@@ -39,7 +39,7 @@ export function MessageBox({ replyTo, onReplyCancel }: Props) {
       content: trimmed,
       createdAt: new Date().toISOString(),
     };
-    appendMessage(optimistic);
+    appendMessage(activeRoom.id, optimistic);
 
     sendMessage(trimmed, user.id, user.displayName, "user");
     setValue("");
