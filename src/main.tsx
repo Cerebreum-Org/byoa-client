@@ -28,16 +28,15 @@ function Root() {
     // Try real session first; fall back to dev user if backend unavailable
     api.me()
       .then(boot)
-      .catch(() => {
-        const DEV_USER = {
-          id: "dev-user",
-          email: "dev@byoa.local",
-          username: "hypereum",
-          displayName: "Hypereum",
-          avatarUrl: null,
-        };
-        setUser(DEV_USER);
-      })
+      .catch(() =>
+        // No active session — auto-login dev account
+        api.login({ email: "dev@byoa.local", password: "byoadev123" })
+          .then((res) => boot(res.user))
+          .catch(() => {
+            // Backend unavailable — fall back to offline dev user
+            setUser({ id: "dev-user", email: "dev@byoa.local", username: "hypereum", displayName: "Hypereum", avatarUrl: null });
+          })
+      )
       .finally(() => setLoading(false));
   }, []);
 
