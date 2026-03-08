@@ -17,11 +17,11 @@
   --text-secondary: #b5bac1;
   --text-muted:    #80848e;
   --text-link:     #00a8fc;
-  --accent: oklch(0.97 0 0);
+  --accent:        #5865f2;
   --accent-hover:  #4752c4;
   --online:        #23a55a;
   --danger:        #f23f43;
-  --border: oklch(0.922 0 0);
+  --border:        #3f4147;
   --scrollbar:     #202225;
   --channel-default: #8e9297;
   --channel-active:  #f2f3f5;

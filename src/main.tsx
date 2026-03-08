@@ -30,7 +30,7 @@ function Root() {
 
   if (loading) {
     return (
-      <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-primary)", color: "var(--text-muted)" }}>
+      <div className="h-screen flex items-center justify-center bg-zinc-900 text-zinc-500">
         Loading...
       </div>
     );

@@ -2,6 +2,7 @@ import { useStore } from "@/store";
 import { ServerList } from "@/components/ServerList";
 import { ChannelSidebar } from "@/components/ChannelSidebar";
 import { ChatArea } from "@/components/ChatArea";
+import { MemberList } from "@/components/MemberList";
 import { api } from "@/api/client";
 import { useEffect } from "react";
 
@@ -20,10 +21,13 @@ export function App() {
   }, [setWorkspaces, setActiveWorkspace, setRooms]);
 
   return (
-    <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+    <div className="flex h-screen overflow-hidden bg-zinc-900 text-zinc-100">
       <ServerList />
       <ChannelSidebar />
-      <ChatArea />
+      <div className="flex flex-1 overflow-hidden">
+        <ChatArea />
+        <MemberList />
+      </div>
     </div>
   );
 }
