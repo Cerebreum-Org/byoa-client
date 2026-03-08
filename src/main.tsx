@@ -62,6 +62,9 @@ function Root() {
   return <App />;
 }
 
-createRoot(document.getElementById("root")!).render(
+const rootEl = document.getElementById("root")!;
+const w = window as any;
+if (!w.__byoa_root) { w.__byoa_root = createRoot(rootEl); }
+w.__byoa_root.render(
   <Root />
 );
