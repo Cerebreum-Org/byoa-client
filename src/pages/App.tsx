@@ -3,6 +3,7 @@ import { ServerList } from "@/components/ServerList";
 import { ChannelSidebar } from "@/components/ChannelSidebar";
 import { ChatArea } from "@/components/ChatArea";
 import { MemberList } from "@/components/MemberList";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { api } from "@/api/client";
 import { useEffect } from "react";
 
@@ -26,7 +27,9 @@ export function App() {
       <ServerList />
       <ChannelSidebar />
       <div className="flex flex-1 overflow-hidden">
-        <ChatArea />
+        <ErrorBoundary>
+          <ChatArea />
+        </ErrorBoundary>
         <MemberList />
       </div>
     </div>

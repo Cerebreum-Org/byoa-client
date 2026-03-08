@@ -128,7 +128,7 @@ export function ChatArea() {
                       <span className="text-[11px] text-zinc-500">for @{ownerUsername}</span>
                     )}
                     <span className="text-[11px] text-zinc-500">
-                      {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
+                      {msg.createdAt ? formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true }) : ""}
                     </span>
                   </div>
                 )}
