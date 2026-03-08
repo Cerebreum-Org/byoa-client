@@ -1,18 +1,32 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useStore } from "@/store";
-import { joinRoom, sendMessage, onMessage } from "@/api/socket";
+import { joinRoom, onMessage } from "@/api/socket";
 import { formatDistanceToNow } from "date-fns";
 import { Hash } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { MessageBox } from "@/components/MessageBox";
+import { ReplyBar } from "@/components/ReplyBar";
+import { TypingIndicator } from "@/components/TypingIndicator";
+import { JumpToBottom } from "@/components/JumpToBottom";
 import type { Message } from "@/api/client";
+
+interface ReplyTarget {
+  id: string;
+  senderName: string;
+  content: string;
+}
 
 export function ChatArea() {
   const { activeRoom, messages, appendMessage, setMessages } = useStore();
-  const [input, setInput] = useState("");
+  const [reply, setReply] = useState<ReplyTarget | null>(null);
+  const [atBottom, setAtBottom] = useState(true);
+  const [typingUsers] = useState<string[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!activeRoom) return;
+    setReply(null);
     const leave = joinRoom(activeRoom.id, (msgs: Message[]) => setMessages(msgs));
     return () => { leave(); };
   }, [activeRoom?.id, setMessages]);
@@ -22,14 +36,19 @@ export function ChatArea() {
   }, [appendMessage]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView();
-  }, [messages]);
+    if (atBottom) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, atBottom]);
 
-  const send = () => {
-    if (!input.trim() || !activeRoom) return;
-    sendMessage(input.trim());
-    setInput("");
-  };
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    setAtBottom(distFromBottom < 80);
+  }, []);
+
+  const jumpToBottom = useCallback(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    setAtBottom(true);
+  }, []);
 
   if (!activeRoom) {
     return (
@@ -42,7 +61,7 @@ export function ChatArea() {
   }
 
   return (
-    <div className="flex flex-col flex-1 bg-zinc-900 min-w-0 h-full">
+    <div className="flex flex-col flex-1 bg-zinc-900 min-w-0 h-full relative">
       {/* Header */}
       <div className="h-12 flex items-center px-4 gap-2 bg-zinc-800 border-b border-zinc-700 shrink-0">
         <Hash className="text-zinc-400 w-5 h-5" />
@@ -56,23 +75,28 @@ export function ChatArea() {
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 px-4 py-4">
+      <ScrollArea className="flex-1 px-4 py-4" onScroll={handleScroll}>
         {messages.length === 0 && (
           <div className="pb-4 border-b border-zinc-700 mb-4">
             <div className="text-4xl font-bold text-zinc-100 mb-1">#{activeRoom.name}</div>
-            <div className="text-sm text-zinc-400">This is the beginning of <strong className="text-zinc-200">#{activeRoom.name}</strong>.</div>
+            <div className="text-sm text-zinc-400">
+              This is the beginning of <strong className="text-zinc-200">#{activeRoom.name}</strong>.
+            </div>
           </div>
         )}
 
         {messages.map((msg, i) => {
           const prev = messages[i - 1];
-          const grouped = prev?.senderId === msg.senderId && prev?.senderType === msg.senderType &&
+          const grouped =
+            prev?.senderId === msg.senderId &&
+            prev?.senderType === msg.senderType &&
             new Date(msg.createdAt).getTime() - new Date(prev.createdAt).getTime() < 5 * 60 * 1000;
 
           return (
             <div
               key={msg.id}
               className={`flex gap-3 rounded px-2 group hover:bg-zinc-800/50 ${grouped ? "pl-14 py-0.5" : "py-1"}`}
+              onDoubleClick={() => setReply({ id: msg.id, senderName: msg.senderName, content: msg.content })}
             >
               {!grouped && (
                 <div className={`w-10 h-10 rounded-full shrink-0 mt-0.5 flex items-center justify-center text-sm font-bold ${msg.senderType === "agent" ? "bg-indigo-600" : "bg-zinc-700"}`}>
@@ -101,18 +125,17 @@ export function ChatArea() {
         <div ref={bottomRef} />
       </ScrollArea>
 
+      {/* Jump to bottom */}
+      <JumpToBottom visible={!atBottom} onClick={jumpToBottom} />
+
+      {/* Typing indicator */}
+      <TypingIndicator typingUsers={typingUsers} />
+
+      {/* Reply bar */}
+      {reply && <ReplyBar reply={reply} onCancel={() => setReply(null)} />}
+
       {/* Input */}
-      <div className="px-4 pb-6 shrink-0">
-        <div className="bg-zinc-700 rounded-lg flex items-center px-4 gap-3">
-          <input
-            className="flex-1 h-11 bg-transparent text-sm text-zinc-100 placeholder:text-zinc-500 outline-none"
-            placeholder={`Message #${activeRoom.name}`}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()}
-          />
-        </div>
-      </div>
+      <MessageBox replyTo={reply} onReplyCancel={() => setReply(null)} />
     </div>
   );
 }
