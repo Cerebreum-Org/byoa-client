@@ -32,8 +32,9 @@ export function ChatArea() {
   }, [activeRoom?.id, setMessages]);
 
   useEffect(() => {
-    return onMessage((msg) => appendMessage(activeRoom?.id ?? "", msg));
-  }, [appendMessage]);
+    const roomId = activeRoom?.id ?? "";
+    return onMessage((msg) => appendMessage(roomId, msg));
+  }, [activeRoom?.id, appendMessage]);
 
   useEffect(() => {
     if (atBottom) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
